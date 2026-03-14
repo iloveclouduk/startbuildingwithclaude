@@ -140,9 +140,64 @@ Claude Code has a built-in **Skills** system — instead of pasting prompts ever
 - Claude **automatically** uses the right skill based on your task — no manual selection needed
 - Skills load on-demand, so they only use context when relevant
 
-### Create Your Skills
+### Step 1: Install Official Pre-Built Skills
 
-#### Skill 1: Convex Specialist
+For Next.js and UI/UX, **don't write your own** — install the official ones from the teams who build these tools. Run these in your terminal:
+
+```bash
+# ──────────────────────────────────────────────
+# FROM ANTHROPIC (official)
+# ──────────────────────────────────────────────
+
+# Frontend design — distinctive UI, avoids generic "AI slop" (277K+ installs)
+npx skills add anthropics/claude-code --skill frontend-design -g -y
+
+# ──────────────────────────────────────────────
+# FROM VERCEL (official — the team behind Next.js)
+# ──────────────────────────────────────────────
+
+# React & Next.js performance — 40+ rules across 8 categories
+npx skills add vercel-labs/agent-skills@react-best-practices -g -y
+
+# Web design & accessibility — 100+ rules for UI quality
+npx skills add vercel-labs/agent-skills@web-design-guidelines -g -y
+
+# React composition patterns — clean component architecture
+npx skills add vercel-labs/agent-skills@react-composition-patterns -g -y
+
+# ──────────────────────────────────────────────
+# FROM SENTRY (official — the error tracking company)
+# ──────────────────────────────────────────────
+
+# Security review — 17 vulnerability types, structured reports
+npx skills install getsentry/skills@security-review -g -y
+
+# ──────────────────────────────────────────────
+# FROM COMMUNITY (verified)
+# ──────────────────────────────────────────────
+
+# Shadcn UI component patterns
+npx skills add giuseppe-trisciuoglio/developer-kit@shadcn-ui -g -y
+```
+
+> **Why official skills?** They're maintained by the teams who build these tools — Anthropic for design, Vercel for React/Next.js, Sentry for security. They get updated when the frameworks change. Writing your own risks being wrong or outdated.
+>
+> **What each one does:**
+>
+> | Skill | Provider | What it covers |
+> |---|---|---|
+> | `frontend-design` | **Anthropic** | Bold typography, colour palettes, animations, layout — breaks out of generic AI design |
+> | `react-best-practices` | **Vercel** | Server Components, bundle optimisation, memoisation, data fetching — 40+ rules |
+> | `web-design-guidelines` | **Vercel** | Accessibility, ARIA, focus states, touch targets, dark mode, forms — 100+ rules |
+> | `react-composition-patterns` | **Vercel** | Compound components, state lifting, clean prop patterns |
+> | `security-review` | **Sentry** | Injection, XSS, SSRF, CSRF, auth, crypto — structured vulnerability reports |
+> | `shadcn-ui` | **Community** | Shadcn component patterns, CLI usage, theming |
+
+### Step 2: Create Your Custom Project Skills
+
+The official skills handle general best practices. Your custom skills handle **your project's specific rules** — things only you know about your app.
+
+#### Skill 1: Convex Specialist (Custom — references official rules)
 
 Create `.claude/skills/convex-specialist/SKILL.md`:
 
@@ -189,76 +244,33 @@ When writing Convex code:
 - Never mix database writes with external API calls in the same function
 ```
 
-#### Skill 2: Next.js Specialist
+#### Skill 2: Project Design Rules (Custom — your app's specific look)
 
-Create `.claude/skills/nextjs-specialist/SKILL.md`:
+The official `frontend-design` and `shadcn-ui` skills handle general design best practices. This skill adds **your project's specific theme**:
 
-```markdown
----
-name: nextjs-specialist
-description: Use when working with Next.js — pages, routing, components, server/client logic, or any frontend framework code.
----
-When writing Next.js code:
-
-## App Router
-- Use the App Router (not Pages Router)
-- Follow file-based routing conventions in `app/` directory
-- Use `layout.tsx` for shared layouts that persist across navigation
-- Use `loading.tsx` for streaming loading states
-- Use `error.tsx` for error boundaries
-- Use the Metadata API for SEO (`export const metadata = {}`)
-
-## Server vs Client Components
-- Default to Server Components — they ship zero JavaScript to the client
-- Only add `'use client'` when the component genuinely needs interactivity (hooks, event handlers, browser APIs)
-- Server Components CAN import Client Components — but NOT vice versa
-- Pass server data to client components as props
-- Shadcn UI components require `'use client'` because they use React hooks internally
-- Wrap interactive client components as small as possible to minimise the client boundary
-
-## Data fetching
-- Fetch data in Server Components using async/await — no useEffect needed
-- Use `<Suspense>` boundaries to stream parts of the page as they become ready
-- Use Convex's `useQuery()` hook in client components for real-time reactive data
-
-## General
-- Keep server and client logic cleanly separated
-- Use TypeScript strictly — define types for all props and data
-```
-
-#### Skill 3: UI/UX & Frontend Engineer
-
-Create `.claude/skills/ui-engineer/SKILL.md`:
+Create `.claude/skills/project-theme/SKILL.md`:
 
 ```markdown
 ---
-name: ui-engineer
-description: Use when building UI, designing interfaces, or styling components with Shadcn.
+name: project-theme
+description: Use when building UI for this project. Defines our specific design theme and conventions.
 ---
-When building UI:
+This project uses a specific design theme on top of Shadcn UI:
 
-## Shadcn setup
-- Shadcn copies component source code into your project — it is NOT an npm dependency
-- Add components via CLI: `npx shadcn@latest add button card dialog`
-- Components live in `components/ui/` directory
-- Shared/custom components go in `components/shared/`
+## Theme
+- Black-and-white minimalistic design — no colours unless explicitly requested
+- Clean spacing and generous whitespace
+- Use CSS variables defined in `globals.css` for all theming
+
+## Component conventions
+- Shadcn components live in `components/ui/` — do not modify these directly
+- Custom shared components go in `components/shared/`
 - Use the `cn()` helper from `@/lib/utils` for conditional Tailwind classes
+- Use `lucide-react` for all icons
 
-## Design rules
-- Black-and-white minimalistic theme
-- Use CSS variables in `globals.css` for theming (Shadcn uses this by default)
-- Tailwind-first styling — use utility classes, avoid inline styles
-- Clean spacing and typography
-- Mobile-responsive by default
-- No unnecessary visual clutter — every element earns its place
-
-## Accessibility
-- Shadcn is built on Radix UI primitives — accessibility (keyboard nav, ARIA) is built in
-- Do not override or remove accessibility attributes from Shadcn components
-- Ensure proper contrast ratios and semantic HTML
-
-## Icons
-- Use `lucide-react` for icons (Shadcn's default icon library)
+## Key rule
+- Shadcn UI components use React hooks internally — they ALWAYS need `'use client'`
+- Keep client boundaries as small as possible
 ```
 
 ### Bonus: Convex's Official Rules Files
@@ -277,13 +289,15 @@ That's it. The Convex skill already tells Claude to read these files when workin
 
 ### Verify Your Skills
 
-After creating the files, start Claude Code and type:
+After creating the custom files and installing the official skills, start Claude Code and type:
 
 ```
 /skills
 ```
 
-You should see all three skills listed.
+You should see:
+- **Official (installed globally):** `frontend-design`, `react-best-practices`, `web-design-guidelines`, `react-composition-patterns`, `security-review`, `shadcn-ui`
+- **Custom (your project):** `convex-specialist`, `project-theme`
 
 ---
 
@@ -339,15 +353,18 @@ name: nextjs-builder
 description: Build or modify Next.js pages, components, routes, layouts, or frontend logic.
 tools: Read, Write, Edit, Bash, Glob, Grep
 skills:
-  - nextjs-specialist
-  - ui-engineer
+  - project-theme
 ---
 You are a Next.js frontend builder with UI design skills.
+
+The official frontend-design, react-best-practices, shadcn-ui, and web-design-guidelines 
+skills are installed globally and will load automatically when relevant.
+Your preloaded project-theme skill defines this project's specific design rules.
 
 Workflow:
 1. Read existing pages and components to understand the structure
 2. Implement the requested feature using App Router conventions
-3. Use Shadcn components with black-and-white minimalistic theme
+3. Use Shadcn components with the project's black-and-white minimalistic theme
 4. Return a summary of what you built and where the files are
 ```
 
@@ -356,8 +373,8 @@ Workflow:
 When you ask Claude Code to build something like "add a task list feature":
 
 1. **Claude Code** decides which subagent(s) to use based on the task
-2. The **Convex Builder** subagent spins up → builds the database schema, queries, and mutations (with Convex skill loaded)
-3. The **Next.js Builder** subagent spins up → builds the page and components (with Next.js + UI skills loaded)
+2. The **Convex Builder** subagent spins up → builds the database schema, queries, and mutations (with custom Convex skill + official `.mdc` rules loaded)
+3. The **Next.js Builder** subagent spins up → builds the page and components (with official `frontend-design`, `react-best-practices`, `shadcn-ui` skills auto-loaded + custom `project-theme` preloaded)
 4. Each subagent works in its **own context** and returns a clean summary
 5. Your main conversation stays clean and focused
 
@@ -457,13 +474,7 @@ Once installed, Claude automatically activates this skill when you say things li
 
 ### Security Skill: Sentry's Security Review
 
-Built by Sentry's team — provides structured vulnerability reports with file locations, confidence levels, and fix recommendations:
-
-```
-npx skills install getsentry/skills@security-review
-```
-
-Covers 17 vulnerability types including injection, XSS, SSRF, CSRF, auth, and crypto — with language-specific guides for JavaScript/Node/React.
+Already installed in Section 4 (Step 1). Built by Sentry's team — provides structured vulnerability reports with file locations, confidence levels, and fix recommendations. Covers 17 vulnerability types including injection, XSS, SSRF, CSRF, auth, and crypto.
 
 ### Security Agent: Security Reviewer
 
