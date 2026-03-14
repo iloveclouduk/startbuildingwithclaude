@@ -27,7 +27,12 @@ Get a fully functional, secured web app running in minutes — no manual coding 
    npm install && npm run dev
    ```
 
-4. **Set up Convex Cloud**
+4. **Download Convex AI rules** (gives Claude Code and Cursor the best Convex knowledge)
+   ```bash
+   mkdir -p .cursor/rules && npx -y convex@latest cursor-rules
+   ```
+
+5. **Set up Convex Cloud**
    - Choose `Create new project`
    - Name it (e.g. `my-app`, or any name you want)
    - Select **Cloud deployment**
@@ -247,9 +252,9 @@ When writing Convex code:
 - Never mix database writes with external API calls in the same function
 ```
 
-### Optional: Download Convex's Official Rules Files
+### Bonus: Convex's Official Rules Files
 
-If you're using Claude Code or Cursor, Convex provides comprehensive `.mdc` rule files with detailed best practices, code examples, and common mistakes. The Convex skill above already references these files — you just need to download them once.
+Convex provides comprehensive `.mdc` rule files with detailed best practices, code examples, and common mistakes. The Convex skill above already references these files automatically — you just need to download them once.
 
 Run this in your project root:
 
@@ -257,7 +262,7 @@ Run this in your project root:
 mkdir -p .cursor/rules && npx -y convex@latest cursor-rules
 ```
 
-The Convex skill already tells Claude to read these files when working on Convex code.
+That's it. The Convex skill already tells Claude to read these files when working on Convex code.
 
 > **Tip:** This also works if you use Cursor — same files, both tools benefit.
 
