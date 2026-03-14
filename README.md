@@ -290,10 +290,18 @@ Skills teach Claude *how* to do things correctly. But subagents are **separate C
 |---|---|---|
 | **What it does** | Teaches Claude rules and standards | Sends a separate worker to do a task |
 | **Runs where** | Inside your current conversation | In its own isolated context window |
-| **Best for** | Standards, conventions, patterns | Building features, research, reviews |
+| **Best for** | Standards, conventions, patterns | Building features, security reviews |
+| **Can restrict tools?** | No | Yes — you control what it can/can't do |
 | **Analogy** | A rulebook on the desk | A specialist in another room doing the job |
 
-**The power move:** Subagents can **preload skills**, so your Convex subagent follows Convex standards automatically while it builds.
+### Why Only 2 Agents
+
+Now that official skills auto-load for Next.js, UI/UX, and Shadcn, most agents would just duplicate what skills already do. We only keep agents that **add value skills can't provide**:
+
+| Agent | Why it exists (what skills can't do) |
+|---|---|
+| **Convex Builder** | Preloads your custom Convex skill + reads `.mdc` rules + works in **isolated context** so big backend tasks don't pollute your main conversation |
+| **Security Reviewer** | **Read-only by design** — has `Read`, `Grep`, `Glob`, `Bash` but NO `Write` or `Edit`. It literally cannot modify your code, only report issues. Skills can't restrict tools like this |
 
 ### Create Your Subagents
 
@@ -322,37 +330,32 @@ Workflow:
 4. Return a summary of what you built and where the files are
 ```
 
-#### Subagent 2: Next.js Builder
+#### Subagent 2: Security Reviewer
 
-Create `.claude/agents/nextjs-builder.md`:
+Create `.claude/agents/security-reviewer.md`:
 
 ```markdown
 ---
-name: nextjs-builder
-description: Build or modify Next.js pages, components, routes, layouts, or frontend logic.
-tools: Read, Write, Edit, Bash, Glob, Grep
+name: security-reviewer
+description: Review code for security vulnerabilities. Use after writing code that handles user input, authentication, API endpoints, or sensitive data.
+tools: Read, Grep, Glob, Bash
+skills:
+  - security-review
 ---
-You are a Next.js frontend builder with UI design skills.
+You are a security specialist focused on identifying and remediating vulnerabilities.
 
-The official frontend-design, react-best-practices, shadcn-ui, and web-design-guidelines 
-skills are installed globally and will load automatically when relevant.
+Check for:
+1. OWASP Top 10 vulnerabilities (injection, XSS, SSRF, CSRF)
+2. Hardcoded secrets, API keys, passwords, tokens
+3. Input validation — ensure all user inputs are sanitised
+4. Authentication and authorisation — verify proper access controls
+5. Dependency security — check for vulnerable packages
 
-Workflow:
-1. Read existing pages and components to understand the structure
-2. Implement the requested feature using App Router conventions
-3. Use Shadcn components following the project's design theme defined in CLAUDE.md
-4. Return a summary of what you built and where the files are
+Flag each issue with severity level, file location, and a recommended fix.
+Do not modify code — only report findings.
 ```
 
-### How It All Works Together
-
-When you ask Claude Code to build something like "add a task list feature":
-
-1. **Claude Code** decides which subagent(s) to use based on the task
-2. The **Convex Builder** subagent spins up → builds the database schema, queries, and mutations (with custom Convex skill + official `.mdc` rules loaded)
-3. The **Next.js Builder** subagent spins up → builds the page and components (with official `frontend-design`, `react-best-practices`, `shadcn-ui` skills auto-loaded)
-4. Each subagent works in its **own context** and returns a clean summary
-5. Your main conversation stays clean and focused
+> **Note:** The Security Reviewer has **no** `Write` or `Edit` tools — it can only review and report, never modify your code. This is a deliberate safety feature that skills alone cannot provide.
 
 ### Verify Your Subagents
 
@@ -360,7 +363,16 @@ When you ask Claude Code to build something like "add a task list feature":
 /agents
 ```
 
-You should see both subagents listed alongside the built-in ones (Explore, Plan, etc.).
+You should see `convex-builder` and `security-reviewer` alongside the built-in ones (Explore, Plan, etc.).
+
+### How It All Works Together
+
+When you ask Claude Code to build something like "add a task list feature":
+
+1. **Claude Code** works in your main conversation with official skills auto-loaded (`react-best-practices`, `frontend-design`, `shadcn-ui`, `web-design-guidelines`)
+2. For backend work, the **Convex Builder** subagent spins up → builds the database schema, queries, and mutations in its own context (with custom Convex skill + official `.mdc` rules loaded)
+3. After building, you ask the **Security Reviewer** to check the code → it scans for vulnerabilities in its own context and reports back findings without touching your code
+4. Your main conversation stays clean and focused throughout
 
 ---
 
@@ -454,30 +466,11 @@ Already installed in Section 4 (Step 1). Built by Sentry's team — provides str
 
 ### Security Agent: Security Reviewer
 
-Create a dedicated security subagent that reviews your code after every feature. Create `.claude/agents/security-reviewer.md`:
+Already created in Section 5. This subagent has **no** `Write` or `Edit` tools — it can only review and report, never modify your code. Use it after building features:
 
-```markdown
----
-name: security-reviewer
-description: Review code for security vulnerabilities. Use after writing code that handles user input, authentication, API endpoints, or sensitive data.
-tools: Read, Grep, Glob, Bash
-skills:
-  - owasp-security
----
-You are a security specialist focused on identifying and remediating vulnerabilities.
-
-Check for:
-1. OWASP Top 10 vulnerabilities (injection, XSS, SSRF, CSRF)
-2. Hardcoded secrets, API keys, passwords, tokens
-3. Input validation — ensure all user inputs are sanitised
-4. Authentication and authorisation — verify proper access controls
-5. Dependency security — check for vulnerable packages
-
-Flag each issue with severity level, file location, and a recommended fix.
-Do not modify code — only report findings.
 ```
-
-> **Note:** This agent has `Read`, `Grep`, `Glob`, and `Bash` but **no** `Write` or `Edit` — it can only review and report, never modify your code. This is a safety feature.
+Use the security-reviewer agent to check my latest changes
+```
 
 ### Claude for Enterprise Security
 
