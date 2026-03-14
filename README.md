@@ -17,8 +17,7 @@ Get a fully functional, secured web app running in minutes — no manual coding 
    - Select **Next.js** as the framework
    - Select **AuthKit (WorkOS)** for authentication
 
-2. **Navigate into the project(default is `my-app`, or whatever name you chose)
-   ```bash
+2. **Navigate into the project** (default is `my-app`, or whatever name you chose)
    ```bash
    cd my-app/
    ```
