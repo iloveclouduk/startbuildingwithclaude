@@ -72,9 +72,6 @@ Convex keeps things **fast, scalable, and enterprise-ready** by enforcing clear 
 | **Mutation** | Write data to the database                   | Create, update, or delete a record |
 | **Action**   | Send/fetch data from a third-party API       | Call an external service or webhook|
 
-### Why This Matters
-
-Convex **does not allow direct reads or writes** from the client. Everything goes through server functions first — this separation is what makes it secure by design.
 
 ---
 
