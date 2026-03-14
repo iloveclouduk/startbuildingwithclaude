@@ -127,14 +127,34 @@ name: convex-specialist
 description: Use when working with Convex — database queries, mutations, actions, schema, or any backend logic.
 ---
 When writing Convex code:
-- Query → read data from the database (use `query()`)
-- Mutation → write data to the database (use `mutation()`)
-- Action → send or fetch data from third-party APIs (use `action()`)
-- All reads/writes go through server functions — never bypass them
-- Use Convex schema validation for all tables
+
+## Core functions
+- Query → read data (use `query()` constructor from `"./_generated/server"`)
+- Mutation → write data (use `mutation()` constructor)
+- Action → call third-party APIs (use `action()` constructor)
+
+## Argument validation (critical)
+- ALWAYS define args with validators: `args: { id: v.id("users"), name: v.string() }`
+- Never use unvalidated handler arguments — a client could pass any value
+- Import validators from `import { v } from "convex/values"`
+
+## Code structure
+- Keep query/mutation/action handlers as thin wrappers
+- Put business logic in plain TypeScript helper functions in `convex/model/`
 - All functions live in the `convex/` directory
+
+## Database best practices
+- Use indexes (`.withIndex()`) instead of `.filter()` on `.collect()` — filtered results still count towards bandwidth
+- Use Convex schema validation for all tables
+- Mutations are full transactions automatically — no begin/end needed
 - Use Convex built-in reactivity — no manual polling or refresh
-- Keep actions separate from mutations — never mix database writes with API calls
+
+## Actions rules
+- Actions CANNOT read/write the database directly
+- Actions must use `ctx.runQuery()` and `ctx.runMutation()` to interact with the database
+- Keep actions as small as possible — only the external API call should be in the action
+- Prefer scheduling actions from mutations (`ctx.scheduler.runAfter()`) over calling actions directly from client
+- Never mix database writes with external API calls in the same function
 ```
 
 #### Skill 2: Next.js Specialist
@@ -147,11 +167,31 @@ name: nextjs-specialist
 description: Use when working with Next.js — pages, routing, components, server/client logic, or any frontend framework code.
 ---
 When writing Next.js code:
+
+## App Router
 - Use the App Router (not Pages Router)
-- Default to Server Components — only add 'use client' when genuinely needed
-- Follow file-based routing conventions
-- Use loading.tsx and error.tsx patterns
+- Follow file-based routing conventions in `app/` directory
+- Use `layout.tsx` for shared layouts that persist across navigation
+- Use `loading.tsx` for streaming loading states
+- Use `error.tsx` for error boundaries
+- Use the Metadata API for SEO (`export const metadata = {}`)
+
+## Server vs Client Components
+- Default to Server Components — they ship zero JavaScript to the client
+- Only add `'use client'` when the component genuinely needs interactivity (hooks, event handlers, browser APIs)
+- Server Components CAN import Client Components — but NOT vice versa
+- Pass server data to client components as props
+- Shadcn UI components require `'use client'` because they use React hooks internally
+- Wrap interactive client components as small as possible to minimise the client boundary
+
+## Data fetching
+- Fetch data in Server Components using async/await — no useEffect needed
+- Use `<Suspense>` boundaries to stream parts of the page as they become ready
+- Use Convex's `useQuery()` hook in client components for real-time reactive data
+
+## General
 - Keep server and client logic cleanly separated
+- Use TypeScript strictly — define types for all props and data
 ```
 
 #### Skill 3: UI/UX & Frontend Engineer
@@ -164,12 +204,75 @@ name: ui-engineer
 description: Use when building UI, designing interfaces, or styling components with Shadcn.
 ---
 When building UI:
-- Use Shadcn components exclusively
+
+## Shadcn setup
+- Shadcn copies component source code into your project — it is NOT an npm dependency
+- Add components via CLI: `npx shadcn@latest add button card dialog`
+- Components live in `components/ui/` directory
+- Shared/custom components go in `components/shared/`
+- Use the `cn()` helper from `@/lib/utils` for conditional Tailwind classes
+
+## Design rules
 - Black-and-white minimalistic theme
+- Use CSS variables in `globals.css` for theming (Shadcn uses this by default)
+- Tailwind-first styling — use utility classes, avoid inline styles
 - Clean spacing and typography
 - Mobile-responsive by default
 - No unnecessary visual clutter — every element earns its place
+
+## Accessibility
+- Shadcn is built on Radix UI primitives — accessibility (keyboard nav, ARIA) is built in
+- Do not override or remove accessibility attributes from Shadcn components
+- Ensure proper contrast ratios and semantic HTML
+
+## Icons
+- Use `lucide-react` for icons (Shadcn's default icon library)
 ```
+
+### Bonus: Use Convex's Official Rules Files
+
+Convex provides comprehensive `.mdc` rule files designed for AI coding assistants. These files contain detailed best practices, code examples, schema patterns, and common mistakes — far more detail than what fits in a skill alone.
+
+#### How to get them
+
+Convex's official docs recommend placing their `.mdc` files in `.cursor/rules/`. If your project already has them, great — Claude Code can read them. If not, check the Convex docs for the latest files:
+
+> [docs.convex.dev/ai/using-cursor](https://docs.convex.dev/ai/using-cursor)
+
+#### How Claude Code uses them
+
+Your Convex skill can **reference** these files so Claude loads them on demand without bloating the skill itself. Update your `.claude/skills/convex-specialist/SKILL.md` to add this at the top of the instructions:
+
+```markdown
+## Reference files
+When working on Convex code, read the following files for detailed patterns and examples:
+- `.cursor/rules/convex.mdc` (if it exists)
+
+These files contain comprehensive Convex best practices, schema design patterns, 
+function syntax, pagination, file storage, and common mistakes to avoid.
+Always follow the patterns in these reference files over general knowledge.
+```
+
+Your subagent can also use them. Since the **convex-builder** agent preloads the `convex-specialist` skill, it automatically gets access to these references too.
+
+#### Why this is powerful
+
+- **Skills** stay concise (under 500 lines) — saving tokens
+- **Reference files** contain the full detail — Claude only reads them when needed
+- **One source of truth** — the same `.mdc` files work for Cursor AND Claude Code
+- **Always up to date** — when Convex updates their rules, both tools benefit
+
+#### Also add to CLAUDE.md
+
+Add a line to your project's `CLAUDE.md` so Claude always knows these files exist:
+
+```markdown
+## Convex Rules
+When working with Convex, refer to `.cursor/rules/convex.mdc` for detailed 
+best practices, function syntax, schema patterns, and code examples.
+```
+
+> **Tip:** This approach works for any technology that provides rule files — Next.js, Tailwind, Shadcn, etc. If you find `.mdc` or `.cursorrules` files for other parts of your stack, reference them the same way.
 
 ### Verify Your Skills
 
@@ -262,6 +365,135 @@ When you ask Claude Code to build something like "add a task list feature":
 ```
 
 You should see both subagents listed alongside the built-in ones (Explore, Plan, etc.).
+
+---
+
+## Section 6 — Plugins (Ready-Made Power-Ups)
+
+Claude Code has a **plugin system** — ready-made extensions you can install in seconds to give Claude extra capabilities. Think of them as power-ups for your codebase.
+
+### How to Install Plugins
+
+The official Anthropic marketplace is already available. To browse and install:
+
+```
+/plugin
+```
+
+This opens an interactive menu. Go to the **Discover** tab to see available plugins. To install directly from the command line:
+
+```
+/plugin install <plugin-name>@claude-plugins-official
+```
+
+### Recommended Plugins for This Stack
+
+#### TypeScript LSP — Real-Time Error Checking
+
+Gives Claude the same code intelligence as VS Code — go-to-definition, find references, and **real-time type error checking** after every edit.
+
+```
+/plugin install typescript-lsp@claude-plugins-official
+```
+
+Once installed, Claude can catch type errors instantly instead of grepping through your entire codebase. Since you're building with Next.js and TypeScript, this is essential.
+
+> **Setup:** You need `typescript-language-server` installed globally:
+> ```bash
+> npm install -g typescript-language-server
+> ```
+
+#### Context7 — Up-to-Date Library Docs
+
+Gives Claude access to **real, current documentation** for libraries instead of relying on training data. This means fewer hallucinations and correct API usage for Convex, Next.js, and Shadcn.
+
+#### Superpowers — Structured Development Workflow
+
+Adds brainstorming, test-driven development (TDD), debugging, and code review skills. Includes code simplification and security auditing — great for keeping your codebase clean as it grows.
+
+#### Local-Review — AI Code Review Before You Commit
+
+Runs **5 agents in parallel** to review your uncommitted changes and flag issues before they hit version control. Catches bugs, security issues, and code quality problems you'd otherwise miss.
+
+### Exploring More Plugins
+
+There are hundreds of community plugins available. To add more marketplaces:
+
+```
+/plugin marketplace add <marketplace-name>
+```
+
+> **Tip:** Start small — install the **TypeScript LSP** first since you're building with Next.js/TypeScript. Add more plugins as you need them. Too many plugins at once can slow things down.
+
+---
+
+## Section 7 — Security (Skills, Agents & Built-in Tools)
+
+Security shouldn't be an afterthought. Claude Code has built-in security features plus community skills and agents to keep your codebase safe.
+
+### Built-in: `/security-review`
+
+Claude Code ships with a security review command out of the box. Run it anytime to scan your pending changes:
+
+```
+/security-review
+```
+
+This checks for SQL injection risks, cross-site scripting (XSS), authentication flaws, insecure data handling, and dependency vulnerabilities — all without installing anything extra.
+
+### Security Skill: OWASP Standards
+
+Install the OWASP security skill to give Claude knowledge of current security standards when writing or reviewing code:
+
+```bash
+curl -sL https://raw.githubusercontent.com/agam/claude-code-owasp/main/.claude/skills/owasp-security/SKILL.md \
+  -o .claude/skills/owasp-security/SKILL.md --create-dirs
+```
+
+Once installed, Claude automatically activates this skill when you say things like "review this code for security issues" or "is this authentication implementation secure?". It covers OWASP Top 10, input validation, auth patterns, and secure coding across multiple languages.
+
+### Security Skill: Sentry's Security Review
+
+Built by Sentry's team — provides structured vulnerability reports with file locations, confidence levels, and fix recommendations:
+
+```
+npx skills install getsentry/skills@security-review
+```
+
+Covers 17 vulnerability types including injection, XSS, SSRF, CSRF, auth, and crypto — with language-specific guides for JavaScript/Node/React.
+
+### Security Agent: Security Reviewer
+
+Create a dedicated security subagent that reviews your code after every feature. Create `.claude/agents/security-reviewer.md`:
+
+```markdown
+---
+name: security-reviewer
+description: Review code for security vulnerabilities. Use after writing code that handles user input, authentication, API endpoints, or sensitive data.
+tools: Read, Grep, Glob, Bash
+skills:
+  - owasp-security
+---
+You are a security specialist focused on identifying and remediating vulnerabilities.
+
+Check for:
+1. OWASP Top 10 vulnerabilities (injection, XSS, SSRF, CSRF)
+2. Hardcoded secrets, API keys, passwords, tokens
+3. Input validation — ensure all user inputs are sanitised
+4. Authentication and authorisation — verify proper access controls
+5. Dependency security — check for vulnerable packages
+
+Flag each issue with severity level, file location, and a recommended fix.
+Do not modify code — only report findings.
+```
+
+> **Note:** This agent has `Read`, `Grep`, `Glob`, and `Bash` but **no** `Write` or `Edit` — it can only review and report, never modify your code. This is a safety feature.
+
+### Claude for Enterprise Security
+
+For teams that need enterprise-grade security features, compliance, and advanced controls, Anthropic offers a dedicated security programme:
+
+> **Join the waiting list:** [claude.com/contact-sales/security](https://claude.com/contact-sales/security)
 
 ---
 
