@@ -54,9 +54,9 @@ You'll see real-time logs like sign-in redirects, callback handling, and databas
 
 ---
 
-> **You're done with the setup — happy coding!** You now have a fully working app with a **frontend** (Next.js), **authentication** (WorkOS), **backend** (Convex), and a **live dashboard**. That's a real application, running and ready to build on.
+> **You're done with the setup — happy coding!** You now have a fully working app with a **frontend** (Next.js), **authentication** (WorkOS), and **backend** (Convex). That's a real application, running and ready to build on.
 >
-> Everything below is about making Claude Code work **for you** — tips, tools, and best practices to build your main application faster. The hard part (redesigning the frontend, customising the auth page, building your core features) becomes easy when Claude knows your project, follows your standards, and builds the right way every time. Read on to see how.
+> Now it's time to focus on what matters — designing your **landing page**, **authentication page**, and **main application page**. Below you'll find tips and best practices for using Claude Code to build your core functionality faster and smarter.
 
 ---
 
