@@ -305,55 +305,51 @@ Now that official skills auto-load for Next.js, UI/UX, and Shadcn, most agents w
 
 ### Create Your Subagents
 
-You can create subagents interactively by running `/agents` in Claude Code, or create them manually:
+For each agent below, follow this flow in Claude Code:
+
+1. Run `/agents`
+2. Select **Create new agent**
+3. Choose **Project-level** (shared with your team via version control)
+4. Select **Generate with Claude**
+5. Paste the description below when prompted
+6. Choose a **model** (Sonnet recommended for balance of speed and quality)
+7. Pick a **background colour** (helps identify which agent is running)
+8. Review the generated file — press `e` to edit if needed
+9. Save — available immediately, no restart needed
 
 #### Subagent 1: Convex Builder
 
-Create `.claude/agents/convex-builder.md`:
+Paste this when Claude asks you to describe the agent:
 
-```markdown
----
-name: convex-builder
-description: Build or modify Convex backend — schema, queries, mutations, actions, server functions.
-tools: Read, Write, Edit, Bash, Glob, Grep
-skills:
-  - convex-specialist
----
-You are a Convex backend builder.
-
-Before writing any code, read `.cursor/rules/convex.mdc` or `.cursor/rules/anthropic_convex_rules.mdc` if they exist.
-
-Workflow:
-1. Read existing schema and functions in `convex/`
-2. Implement the requested feature using the correct pattern (query, mutation, or action)
-3. Follow Convex standards from your preloaded skill
-4. Return a summary of what you built and where the files are
 ```
+A Convex backend builder specialised in building and modifying schema, 
+queries, mutations, actions, and server functions. It should preload 
+the convex-specialist skill and always read .cursor/rules/convex.mdc 
+before writing any code. It returns a summary of what was built and 
+which files were created or modified.
+```
+
+After Claude generates the agent, review it (`e` to edit), then:
+- **Tools:** keep all selected (needs Read, Write, Edit, Bash, Glob, Grep)
+- **Skills:** make sure `convex-specialist` is listed
+- **Model:** Sonnet (good balance of speed and quality)
 
 #### Subagent 2: Security Reviewer
 
-Create `.claude/agents/security-reviewer.md`:
+Repeat the same flow (`/agents` → Create → Project-level → Generate with Claude), then paste:
 
-```markdown
----
-name: security-reviewer
-description: Review code for security vulnerabilities. Use after writing code that handles user input, authentication, API endpoints, or sensitive data.
-tools: Read, Grep, Glob, Bash
-skills:
-  - security-review
----
-You are a security specialist focused on identifying and remediating vulnerabilities.
-
-Check for:
-1. OWASP Top 10 vulnerabilities (injection, XSS, SSRF, CSRF)
-2. Hardcoded secrets, API keys, passwords, tokens
-3. Input validation — ensure all user inputs are sanitised
-4. Authentication and authorisation — verify proper access controls
-5. Dependency security — check for vulnerable packages
-
-Flag each issue with severity level, file location, and a recommended fix.
-Do not modify code — only report findings.
 ```
+A read-only security reviewer that scans code for vulnerabilities 
+but never modifies any files. It should preload the security-review 
+skill. It checks for OWASP Top 10, hardcoded secrets, input validation, 
+auth issues, and dependency vulnerabilities. It reports each issue 
+with severity, file location, and a recommended fix.
+```
+
+After Claude generates the agent, review it (`e` to edit), then:
+- **Tools:** deselect Write and Edit — keep only Read, Grep, Glob, Bash
+- **Skills:** make sure `security-review` is listed
+- **Model:** Sonnet
 
 > **Note:** The Security Reviewer has **no** `Write` or `Edit` tools — it can only review and report, never modify your code. This is a deliberate safety feature that skills alone cannot provide.
 
@@ -396,42 +392,56 @@ This opens an interactive menu. Go to the **Discover** tab to see available plug
 
 ### Recommended Plugins for This Stack
 
-#### TypeScript LSP — Real-Time Error Checking
+The official Anthropic marketplace is already available in Claude Code. Browse with `/plugin` → Discover tab, or install directly.
 
-Gives Claude the same code intelligence as VS Code — go-to-definition, find references, and **real-time type error checking** after every edit.
+> **Less is more.** Every plugin loads into Claude's context, uses tokens, and adds decisions Claude has to make. Start with 3 essentials. Add more only when you hit a real problem.
 
-```
-/plugin install typescript-lsp@claude-plugins-official
-```
+#### Essential — Install These 4
 
-Once installed, Claude can catch type errors instantly instead of grepping through your entire codebase. Since you're building with Next.js and TypeScript, this is essential.
+```bash
+# 1. TypeScript LSP — real-time type checking and error detection
+/plugin install typescript-lsp
 
-> **Setup:** You need `typescript-language-server` installed globally:
-> ```bash
-> npm install -g typescript-language-server
-> ```
+# 2. Code Simplifier — refines code for clarity after building features
+/plugin install code-simplifier
 
-#### Context7 — Up-to-Date Library Docs
+# 3. Security Guidance — catches vulnerabilities as you write code
+/plugin install security-guidance
 
-Gives Claude access to **real, current documentation** for libraries instead of relying on training data. This means fewer hallucinations and correct API usage for Convex, Next.js, and Shadcn.
-
-#### Superpowers — Structured Development Workflow
-
-Adds brainstorming, test-driven development (TDD), debugging, and code review skills. Includes code simplification and security auditing — great for keeping your codebase clean as it grows.
-
-#### Local-Review — AI Code Review Before You Commit
-
-Runs **5 agents in parallel** to review your uncommitted changes and flag issues before they hit version control. Catches bugs, security issues, and code quality problems you'd otherwise miss.
-
-### Exploring More Plugins
-
-There are hundreds of community plugins available. To add more marketplaces:
-
-```
-/plugin marketplace add <marketplace-name>
+# 4. Feature Dev — structured building: explore → architect → implement → review
+/plugin install feature-dev
 ```
 
-> **Tip:** Start small — install the **TypeScript LSP** first since you're building with Next.js/TypeScript. Add more plugins as you need them. Too many plugins at once can slow things down.
+| Plugin | Why it's essential |
+|---|---|
+| `typescript-lsp` | You're building in Next.js/TypeScript — catches type errors instantly instead of grepping. Needs `npm install -g typescript-language-server` |
+| `code-simplifier` | Keeps your codebase clean as you build fast — run it after finishing a feature |
+| `security-guidance` | Catches injection, XSS, unsafe patterns in real time — critical since you handle auth with WorkOS |
+| `feature-dev` | Guides every feature through a structured workflow — explore the codebase first, design the architecture, implement with quality gates, then review. Uses 3 specialised agents (explorer, architect, reviewer) so features are built properly from the start |
+
+#### Optional — Add When You Need Them
+
+```bash
+# Ready to commit? Clean git workflow commands
+/plugin install commit-commands
+
+# Reviewing a PR? 6 specialised review agents
+/plugin install pr-review-toolkit
+
+# Automated code review with confidence scoring
+/plugin install code-review
+
+# Structured feature building: explore → architect → implement → review
+/plugin install feature-dev
+
+# Building Agent SDK apps
+/plugin install agent-sdk-dev
+
+# Frontend design (also available as a skill)
+/plugin install frontend-design
+```
+
+> **Tip:** All of these are from the official Anthropic marketplace — no third-party trust needed. Browse everything available with `/plugin` → Discover tab.
 
 ---
 
@@ -477,6 +487,8 @@ Use the security-reviewer agent to check my latest changes
 For teams that need enterprise-grade security features, compliance, and advanced controls, Anthropic offers a dedicated security programme:
 
 > **Join the waiting list:** [claude.com/contact-sales/security](https://claude.com/contact-sales/security)
+
+---
 
 ---
 
