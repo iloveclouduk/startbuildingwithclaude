@@ -27,7 +27,7 @@ Get a fully functional, secured web app running in minutes — no manual coding 
    npm install && npm run dev
    ```
 
-4. **(Optional but recommended for Claude Code tips section) Download Convex AI rules — gives Claude Code and Cursor the best Convex knowledge
+4. **(Optional but recommended for Claude Code tips section) Download Convex AI rules gives Claude Code and Cursor the best Convex knowledge**
    ```bash
    mkdir -p .cursor/rules && npx -y convex@latest cursor-rules
    ```
