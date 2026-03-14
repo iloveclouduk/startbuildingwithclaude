@@ -29,7 +29,7 @@ Get a fully functional, secured web app running in minutes — no manual coding 
 
 4. **Set up Convex Cloud**
    - Choose `Create new project`
-   - Name it (e.g. `my-app`)
+   - Name it (e.g. `my-app`, or any name you want)
    - Select **Cloud deployment**
 
 5. **Activate your account**
