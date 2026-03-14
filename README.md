@@ -91,13 +91,6 @@ That's it. Claude Code will automatically:
 
 It's your **project's memory**. Every time you start a new Claude Code session, this file is loaded automatically as context — so Claude already knows your project without you re-explaining anything.
 
-### After `/init` — Review & Refine
-
-The generated file is a **starting point**, not a finished product. Review it and add anything Claude Code missed:
-- Specific workflow instructions (branch naming, deployment process)
-- Patterns or conventions unique to your team
-- Remove any generic guidance that doesn't apply
-
 ### Keep It Updated
 
 As your project grows, run `/init` again — Claude Code will review the existing `CLAUDE.md` and suggest improvements.
