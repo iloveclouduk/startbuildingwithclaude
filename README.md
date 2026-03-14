@@ -27,7 +27,12 @@ Get a fully functional, secured web app running in minutes — no manual coding 
    npm install && npm run dev
    ```
 
-4. **Set up Convex Cloud**
+4. **Download Convex AI rules** (gives Claude Code and Cursor the best Convex knowledge)
+   ```bash
+   mkdir -p .cursor/rules && npx -y convex@latest cursor-rules
+   ```
+
+5. **Set up Convex Cloud**
    - Choose `Create new project`
    - Name it (e.g. `my-app`, or any name you want)
    - Select **Cloud deployment**
@@ -100,6 +105,26 @@ It's your **project's memory**. Every time you start a new Claude Code session, 
 
 As your project grows, run `/init` again — Claude Code will review the existing `CLAUDE.md` and suggest improvements.
 
+### Add Convex Rules to CLAUDE.md
+
+After `/init` generates your `CLAUDE.md`, open it and add this at the bottom:
+
+```markdown
+## Convex Rules
+When working with Convex, always read `.cursor/rules/convex.mdc` or 
+`.cursor/rules/anthropic_convex_rules.mdc` for official best practices, 
+function syntax, schema patterns, and code examples before writing code.
+```
+
+This ensures Claude knows about the rules files in **every session** — not just when the skill or agent is active.
+
+> **You now have Convex rules referenced in three places:**
+> - **CLAUDE.md** — loaded every session, always available
+> - **Convex Skill** — loaded when Claude works on Convex code
+> - **Convex Builder Agent** — loaded when the subagent builds backend features
+>
+> No matter how Claude enters your Convex code, it will find the rules.
+
 > **Pro tip:** Use `#` in Claude Code to quickly add something to memory mid-session. For example, type `# we use Shadcn with black-and-white theme` and it gets saved for future sessions.
 
 ---
@@ -126,6 +151,13 @@ Create `.claude/skills/convex-specialist/SKILL.md`:
 name: convex-specialist
 description: Use when working with Convex — database queries, mutations, actions, schema, or any backend logic.
 ---
+## Reference files
+When working on Convex code, FIRST read these files for detailed patterns and examples:
+- `.cursor/rules/convex.mdc` (if it exists)
+- `.cursor/rules/anthropic_convex_rules.mdc` (if it exists)
+These contain comprehensive official Convex best practices maintained by the Convex team.
+Always follow patterns in these reference files over general knowledge.
+
 When writing Convex code:
 
 ## Core functions
@@ -229,50 +261,19 @@ When building UI:
 - Use `lucide-react` for icons (Shadcn's default icon library)
 ```
 
-### Bonus: Use Convex's Official Rules Files
+### Bonus: Convex's Official Rules Files
 
-Convex provides comprehensive `.mdc` rule files designed for AI coding assistants. These files contain detailed best practices, code examples, schema patterns, and common mistakes — far more detail than what fits in a skill alone.
+Convex provides comprehensive `.mdc` rule files with detailed best practices, code examples, and common mistakes. The Convex skill above already references these files automatically — you just need to download them once.
 
-#### How to get them
+Run this in your project root:
 
-Convex's official docs recommend placing their `.mdc` files in `.cursor/rules/`. If your project already has them, great — Claude Code can read them. If not, check the Convex docs for the latest files:
-
-> [docs.convex.dev/ai/using-cursor](https://docs.convex.dev/ai/using-cursor)
-
-#### How Claude Code uses them
-
-Your Convex skill can **reference** these files so Claude loads them on demand without bloating the skill itself. Update your `.claude/skills/convex-specialist/SKILL.md` to add this at the top of the instructions:
-
-```markdown
-## Reference files
-When working on Convex code, read the following files for detailed patterns and examples:
-- `.cursor/rules/convex.mdc` (if it exists)
-
-These files contain comprehensive Convex best practices, schema design patterns, 
-function syntax, pagination, file storage, and common mistakes to avoid.
-Always follow the patterns in these reference files over general knowledge.
+```bash
+mkdir -p .cursor/rules && npx -y convex@latest cursor-rules
 ```
 
-Your subagent can also use them. Since the **convex-builder** agent preloads the `convex-specialist` skill, it automatically gets access to these references too.
+That's it. The Convex skill already tells Claude to read these files when working on Convex code.
 
-#### Why this is powerful
-
-- **Skills** stay concise (under 500 lines) — saving tokens
-- **Reference files** contain the full detail — Claude only reads them when needed
-- **One source of truth** — the same `.mdc` files work for Cursor AND Claude Code
-- **Always up to date** — when Convex updates their rules, both tools benefit
-
-#### Also add to CLAUDE.md
-
-Add a line to your project's `CLAUDE.md` so Claude always knows these files exist:
-
-```markdown
-## Convex Rules
-When working with Convex, refer to `.cursor/rules/convex.mdc` for detailed 
-best practices, function syntax, schema patterns, and code examples.
-```
-
-> **Tip:** This approach works for any technology that provides rule files — Next.js, Tailwind, Shadcn, etc. If you find `.mdc` or `.cursorrules` files for other parts of your stack, reference them the same way.
+> **Tip:** This also works if you use Cursor — same files, both tools benefit.
 
 ### Verify Your Skills
 
@@ -318,6 +319,8 @@ skills:
   - convex-specialist
 ---
 You are a Convex backend builder.
+
+Before writing any code, read `.cursor/rules/convex.mdc` or `.cursor/rules/anthropic_convex_rules.mdc` if they exist.
 
 Workflow:
 1. Read existing schema and functions in `convex/`
