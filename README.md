@@ -52,6 +52,14 @@ You'll see real-time logs like sign-in redirects, callback handling, and databas
 
 ---
 
+---
+
+> **You're done with the setup — happy coding!** You now have a fully working app with a **frontend** (Next.js), **authentication** (WorkOS), **backend** (Convex), and a **live dashboard**. That's a real application, running and ready to build on.
+>
+> Everything below is about making Claude Code work **for you** — tips, tools, and best practices to build your main application faster. The hard part (redesigning the frontend, customising the auth page, building your core features) becomes easy when Claude knows your project, follows your standards, and builds the right way every time. Read on to see how.
+
+---
+
 ## Section 2 — Understanding Convex Core Concepts
 
 Convex keeps things **fast, scalable, and enterprise-ready** by enforcing clear boundaries between read, write, and external operations.
@@ -99,47 +107,164 @@ As your project grows, run `/init` again — Claude Code will review the existin
 
 ---
 
-## Section 4 — Specialised AI Agents
+## Section 4 — Specialised AI Skills
 
-Create focused agents that each own one domain. This avoids confusion and keeps output high-quality.
+Claude Code has a built-in **Skills** system — instead of pasting prompts every session, you create `SKILL.md` files that Claude automatically discovers and loads when relevant. Each skill makes Claude a specialist in one domain.
 
-### Agent 1: Convex Specialist
+### How Skills Work
 
-> **Role:** Everything database and backend — strictly following Convex standards.
+- A Skill is just a folder with a `SKILL.md` file inside it
+- Place them in your project at `.claude/skills/`
+- Claude **automatically** uses the right skill based on your task — no manual selection needed
+- Skills load on-demand, so they only use context when relevant
+
+### Create Your Skills
+
+#### Skill 1: Convex Specialist
+
+Create `.claude/skills/convex-specialist/SKILL.md`:
+
+```markdown
+---
+name: convex-specialist
+description: Use when working with Convex — database queries, mutations, actions, schema, or any backend logic.
+---
+When writing Convex code:
+- Query → read data from the database (use `query()`)
+- Mutation → write data to the database (use `mutation()`)
+- Action → send or fetch data from third-party APIs (use `action()`)
+- All reads/writes go through server functions — never bypass them
+- Use Convex schema validation for all tables
+- All functions live in the `convex/` directory
+- Use Convex built-in reactivity — no manual polling or refresh
+- Keep actions separate from mutations — never mix database writes with API calls
+```
+
+#### Skill 2: Next.js Specialist
+
+Create `.claude/skills/nextjs-specialist/SKILL.md`:
+
+```markdown
+---
+name: nextjs-specialist
+description: Use when working with Next.js — pages, routing, components, server/client logic, or any frontend framework code.
+---
+When writing Next.js code:
+- Use the App Router (not Pages Router)
+- Default to Server Components — only add 'use client' when genuinely needed
+- Follow file-based routing conventions
+- Use loading.tsx and error.tsx patterns
+- Keep server and client logic cleanly separated
+```
+
+#### Skill 3: UI/UX & Frontend Engineer
+
+Create `.claude/skills/ui-engineer/SKILL.md`:
+
+```markdown
+---
+name: ui-engineer
+description: Use when building UI, designing interfaces, or styling components with Shadcn.
+---
+When building UI:
+- Use Shadcn components exclusively
+- Black-and-white minimalistic theme
+- Clean spacing and typography
+- Mobile-responsive by default
+- No unnecessary visual clutter — every element earns its place
+```
+
+### Verify Your Skills
+
+After creating the files, start Claude Code and type:
 
 ```
-You are an agent fully specialised in Convex. You follow best practices
-and the professional Convex way — no overcomplicating, no wrong approaches.
-
-Your scope:
-- Query  → read data from the database
-- Mutation → write data to the database
-- Action  → send or fetch data from third-party APIs
-
-Everything you write or review must follow Convex standards exclusively.
+/skills
 ```
 
-### Agent 2: Next.js Specialist
+You should see all three skills listed.
 
-> **Role:** Frontend framework logic — strictly following Next.js standards.
+---
+
+## Section 5 — Subagents (The Workers)
+
+Skills teach Claude *how* to do things correctly. But subagents are **separate Claude instances** that go off, do the work independently, and come back with results — keeping your main conversation clean.
+
+### Skills vs Subagents — When to Use Each
+
+| | Skills | Subagents |
+|---|---|---|
+| **What it does** | Teaches Claude rules and standards | Sends a separate worker to do a task |
+| **Runs where** | Inside your current conversation | In its own isolated context window |
+| **Best for** | Standards, conventions, patterns | Building features, research, reviews |
+| **Analogy** | A rulebook on the desk | A specialist in another room doing the job |
+
+**The power move:** Subagents can **preload skills**, so your Convex subagent follows Convex standards automatically while it builds.
+
+### Create Your Subagents
+
+You can create subagents interactively by running `/agents` in Claude Code, or create them manually:
+
+#### Subagent 1: Convex Builder
+
+Create `.claude/agents/convex-builder.md`:
+
+```markdown
+---
+name: convex-builder
+description: Build or modify Convex backend — schema, queries, mutations, actions, server functions.
+tools: Read, Write, Edit, Bash, Glob, Grep
+skills:
+  - convex-specialist
+---
+You are a Convex backend builder.
+
+Workflow:
+1. Read existing schema and functions in `convex/`
+2. Implement the requested feature using the correct pattern (query, mutation, or action)
+3. Follow Convex standards from your preloaded skill
+4. Return a summary of what you built and where the files are
+```
+
+#### Subagent 2: Next.js Builder
+
+Create `.claude/agents/nextjs-builder.md`:
+
+```markdown
+---
+name: nextjs-builder
+description: Build or modify Next.js pages, components, routes, layouts, or frontend logic.
+tools: Read, Write, Edit, Bash, Glob, Grep
+skills:
+  - nextjs-specialist
+  - ui-engineer
+---
+You are a Next.js frontend builder with UI design skills.
+
+Workflow:
+1. Read existing pages and components to understand the structure
+2. Implement the requested feature using App Router conventions
+3. Use Shadcn components with black-and-white minimalistic theme
+4. Return a summary of what you built and where the files are
+```
+
+### How It All Works Together
+
+When you ask Claude Code to build something like "add a task list feature":
+
+1. **Claude Code** decides which subagent(s) to use based on the task
+2. The **Convex Builder** subagent spins up → builds the database schema, queries, and mutations (with Convex skill loaded)
+3. The **Next.js Builder** subagent spins up → builds the page and components (with Next.js + UI skills loaded)
+4. Each subagent works in its **own context** and returns a clean summary
+5. Your main conversation stays clean and focused
+
+### Verify Your Subagents
 
 ```
-You are a Next.js agent. You produce high-standard, high-quality Next.js
-code without overcomplicating things or adding unnecessary extras.
-
-You build exclusively in the Next.js standard way, with quality and
-adherence to Next.js best practices.
+/agents
 ```
 
-### Agent 3: UI/UX & Frontend Engineer
-
-> **Role:** Design and component quality — pixel-perfect, minimal, consistent.
-
-```
-You are a UI/UX frontend engineer and designer. You ensure every
-interface is perfect, using Shadcn components with a black-and-white
-minimalistic theme design.
-```
+You should see both subagents listed alongside the built-in ones (Explore, Plan, etc.).
 
 ---
 
