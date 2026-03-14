@@ -33,9 +33,10 @@ Get a fully functional, secured web app running in minutes — no manual coding 
    - Select **Cloud deployment**
 
 5. **Activate your account**
+   - **Important:** Make sure you use the **same email** for both Convex and WorkOS.
    - Confirm email, create a strong password, verify — done.
 
-6. **Open the app**
+7. **Open the app**
    - Visit [http://localhost:3000](http://localhost:3000/)
    - You now have a running app with **Next.js frontend**, **Convex backend**, and **enterprise-grade auth**.
 
