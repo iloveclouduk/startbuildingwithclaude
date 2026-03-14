@@ -18,7 +18,7 @@ Get a fully functional, secured web app running in minutes — no manual coding 
    - Select **AuthKit (WorkOS)** for authentication
 
 2. **Navigate into the project(default is `my-app`, or whatever name you chose)
-   ```bash**
+   ```bash
    ```bash
    cd my-app/
    ```
