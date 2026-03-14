@@ -193,11 +193,19 @@ npx skills add giuseppe-trisciuoglio/developer-kit@shadcn-ui -g -y
 > | `security-review` | **Sentry** | Injection, XSS, SSRF, CSRF, auth, crypto — structured vulnerability reports |
 > | `shadcn-ui` | **Community** | Shadcn component patterns, CLI usage, theming |
 
-### Step 2: Create Your Custom Project Skills
+### Step 2: Create Your Custom Convex Skill
 
-The official skills handle general best practices. Your custom skills handle **your project's specific rules** — things only you know about your app.
+The official skills above cover Next.js, UI/UX, Shadcn, and security. But **Convex doesn't have an official Claude Code skill yet** — they provide `.mdc` rule files for Cursor, not a `SKILL.md`. So this custom skill is the bridge that tells Claude to read those official Convex rules.
 
-#### Skill 1: Convex Specialist (Custom — references official rules)
+| What | How | Custom skill needed? |
+|---|---|---|
+| **Next.js** | Official `react-best-practices` from Vercel | No |
+| **UI/UX** | Official `frontend-design` from Anthropic + `web-design-guidelines` from Vercel | No |
+| **Shadcn** | Official `shadcn-ui` community skill | No |
+| **Security** | Official `security-review` from Sentry | No |
+| **Convex** | Custom skill that references official `.mdc` rule files | **Yes** |
+
+#### Convex Specialist (Custom — references official rules)
 
 Create `.claude/skills/convex-specialist/SKILL.md`:
 
@@ -244,35 +252,6 @@ When writing Convex code:
 - Never mix database writes with external API calls in the same function
 ```
 
-#### Skill 2: Project Design Rules (Custom — your app's specific look)
-
-The official `frontend-design` and `shadcn-ui` skills handle general design best practices. This skill adds **your project's specific theme**:
-
-Create `.claude/skills/project-theme/SKILL.md`:
-
-```markdown
----
-name: project-theme
-description: Use when building UI for this project. Defines our specific design theme and conventions.
----
-This project uses a specific design theme on top of Shadcn UI:
-
-## Theme
-- Black-and-white minimalistic design — no colours unless explicitly requested
-- Clean spacing and generous whitespace
-- Use CSS variables defined in `globals.css` for all theming
-
-## Component conventions
-- Shadcn components live in `components/ui/` — do not modify these directly
-- Custom shared components go in `components/shared/`
-- Use the `cn()` helper from `@/lib/utils` for conditional Tailwind classes
-- Use `lucide-react` for all icons
-
-## Key rule
-- Shadcn UI components use React hooks internally — they ALWAYS need `'use client'`
-- Keep client boundaries as small as possible
-```
-
 ### Bonus: Convex's Official Rules Files
 
 Convex provides comprehensive `.mdc` rule files with detailed best practices, code examples, and common mistakes. The Convex skill above already references these files automatically — you just need to download them once.
@@ -297,7 +276,7 @@ After creating the custom files and installing the official skills, start Claude
 
 You should see:
 - **Official (installed globally):** `frontend-design`, `react-best-practices`, `web-design-guidelines`, `react-composition-patterns`, `security-review`, `shadcn-ui`
-- **Custom (your project):** `convex-specialist`, `project-theme`
+- **Custom (your project):** `convex-specialist`
 
 ---
 
@@ -352,19 +331,16 @@ Create `.claude/agents/nextjs-builder.md`:
 name: nextjs-builder
 description: Build or modify Next.js pages, components, routes, layouts, or frontend logic.
 tools: Read, Write, Edit, Bash, Glob, Grep
-skills:
-  - project-theme
 ---
 You are a Next.js frontend builder with UI design skills.
 
 The official frontend-design, react-best-practices, shadcn-ui, and web-design-guidelines 
 skills are installed globally and will load automatically when relevant.
-Your preloaded project-theme skill defines this project's specific design rules.
 
 Workflow:
 1. Read existing pages and components to understand the structure
 2. Implement the requested feature using App Router conventions
-3. Use Shadcn components with the project's black-and-white minimalistic theme
+3. Use Shadcn components following the project's design theme defined in CLAUDE.md
 4. Return a summary of what you built and where the files are
 ```
 
@@ -374,7 +350,7 @@ When you ask Claude Code to build something like "add a task list feature":
 
 1. **Claude Code** decides which subagent(s) to use based on the task
 2. The **Convex Builder** subagent spins up → builds the database schema, queries, and mutations (with custom Convex skill + official `.mdc` rules loaded)
-3. The **Next.js Builder** subagent spins up → builds the page and components (with official `frontend-design`, `react-best-practices`, `shadcn-ui` skills auto-loaded + custom `project-theme` preloaded)
+3. The **Next.js Builder** subagent spins up → builds the page and components (with official `frontend-design`, `react-best-practices`, `shadcn-ui` skills auto-loaded)
 4. Each subagent works in its **own context** and returns a clean summary
 5. Your main conversation stays clean and focused
 
