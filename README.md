@@ -36,7 +36,7 @@ Get a fully functional, secured web app running in minutes — no manual coding 
    - **Important:** Make sure you use the **same email** for both Convex and WorkOS.
    - Confirm email, create a strong password, verify — done.
 
-7. **Open the app**
+6. **Open the app**
    - Visit [http://localhost:3000](http://localhost:3000/)
    - You now have a running app with **Next.js frontend**, **Convex backend**, and **enterprise-grade auth**.
 
@@ -70,18 +70,39 @@ Convex **does not allow direct reads or writes** from the client. Everything goe
 
 ---
 
-## Section 3 — Codebase Documentation with Claude
+## Section 3 — Codebase Documentation with Claude Code
 
-Before building features, generate a full codebase overview so your AI tools understand your project.
+Before building features, let Claude Code understand your entire project. It has a **built-in command** for this — no custom prompt needed.
 
-### Prompt for Claude Code
+### Generate Your CLAUDE.md
+
+Inside your project directory, open Claude Code and run:
 
 ```
-Can you read my entire codebase and make an MD file for you?
-I am using Next.js, Convex, and WorkOS.
+/init
 ```
 
-> **Tip:** Study the generated MD file — it becomes the context your AI agent uses to work within your project accurately.
+That's it. Claude Code will automatically:
+- Scan your entire project (package files, configs, code structure, README, etc.)
+- Generate a `CLAUDE.md` file tailored to your project
+- Include build commands, test instructions, key directories, and coding conventions it detected
+
+### What is CLAUDE.md?
+
+It's your **project's memory**. Every time you start a new Claude Code session, this file is loaded automatically as context — so Claude already knows your project without you re-explaining anything.
+
+### After `/init` — Review & Refine
+
+The generated file is a **starting point**, not a finished product. Review it and add anything Claude Code missed:
+- Specific workflow instructions (branch naming, deployment process)
+- Patterns or conventions unique to your team
+- Remove any generic guidance that doesn't apply
+
+### Keep It Updated
+
+As your project grows, run `/init` again — Claude Code will review the existing `CLAUDE.md` and suggest improvements.
+
+> **Pro tip:** Use `#` in Claude Code to quickly add something to memory mid-session. For example, type `# we use Shadcn with black-and-white theme` and it gets saved for future sessions.
 
 ---
 
