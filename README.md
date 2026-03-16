@@ -490,6 +490,95 @@ For teams that need enterprise-grade security features, compliance, and advanced
 
 ---
 
+## Section 8 — Tips, Tooling & Alternatives
+
+A collection of practical tips to help you get the most out of your development workflow — from context management to alternative tools.
+
+---
+
+### Context Management — Keep It Lean
+
+Skills, plugins, and subagents all consume context tokens. Be intentional about what's active:
+
+> **Rule of thumb:** Disable what you're not using. Enable it when you need it.
+
+- **Plugins** can be toggled on/off — disable plugins you're not actively using to free up context for the ones that matter right now
+- **Skills** load on-demand, but if you have many installed, disable the ones irrelevant to your current task
+- **Subagents** already run in isolated contexts, so they don't compete with your main session — but avoid spawning multiple agents for tasks a single skill could handle
+
+Think of it like tabs in a browser — close what you don't need so the ones you're using run faster.
+
+---
+
+### Billing & Payments
+
+If your app needs **payments or subscriptions**, two options integrate cleanly with Convex:
+
+| Tool | What it does | Best for |
+|---|---|---|
+| **Stripe** | Full payment infrastructure — subscriptions, invoicing, checkout | Production-grade billing with Convex |
+| **Autumn** | Usage-based billing — metering, components, and pricing tiers | Usage-based pricing models with Convex |
+
+Both can be wired into your stack using Convex actions (since they're external API calls) and React components on the frontend. You can create a dedicated **billing skill** that references your payment provider's patterns, and have agents redirect to that skill whenever billing logic is involved — keeping payment code consistent across your codebase.
+
+---
+
+### Emails — Resend + React Email
+
+Need to send transactional emails (welcome emails, password resets, notifications)? Use **Resend** with **React Email**:
+
+1. Build your email templates as **React components** — same JSX you already know
+2. Install Resend in your project and add a **Convex action** to send emails via their API
+3. Create a **skill** for email patterns so Claude follows your templates and sending logic consistently
+
+This keeps your emails type-safe, version-controlled, and styled with the same component system as the rest of your app.
+
+---
+
+### IDE & Terminal Options
+
+Claude Code runs in a terminal, but you have choices about *which* terminal and IDE:
+
+| Tool | What it is |
+|---|---|
+| **Cursor** | AI-native IDE — use it alongside Claude Code in the integrated terminal, plus the Claude extension for in-editor assistance |
+| **Ghostty** | A fast, GPU-accelerated terminal emulator — great if you prefer a dedicated terminal for Claude Code |
+| **WezTerm** | A cross-platform, GPU-accelerated terminal with built-in multiplexing — another solid choice for running Claude Code sessions |
+
+> **Tip:** You can use Cursor as your IDE with Claude Code running in its terminal *and* the Claude extension active in the editor — best of both worlds.
+
+---
+
+### AI-Powered Code Review (Before You Push)
+
+Don't rely on manual reviews alone. These tools can catch issues in your PRs automatically:
+
+| Tool | What it does |
+|---|---|
+| **Greptile** | AI code review that understands your full codebase context |
+| **CodeRabbit** | Automated PR reviews with line-by-line feedback |
+| **Claude in GitHub Actions** | Run Claude as a step in your CI pipeline — review code before it merges |
+
+Set any of these up as a **GitHub Action** so every push gets reviewed before it hits your main branch.
+
+---
+
+### Sandboxed Development Environments
+
+Want isolated, reproducible dev environments without polluting your local machine?
+
+> **Daytona** — spins up sandboxed development environments on demand. Useful for testing, onboarding new contributors, or running untrusted code safely.
+
+---
+
+### Alternative to Next.js
+
+This workshop uses **Next.js**, but if you prefer a different framework:
+
+> **SvelteKit** is an excellent alternative — lighter, faster build times, and a simpler mental model. It pairs well with Convex and most of the patterns in this guide (skills, agents, plugins) transfer directly. If you're starting fresh and aren't locked into the React ecosystem, it's worth considering.
+
+---
+
 ---
 
 ## Quick Reference
